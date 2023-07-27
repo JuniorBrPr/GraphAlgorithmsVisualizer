@@ -2,6 +2,8 @@ package visualizer;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 public class Vertex {
     private final char id;
@@ -45,7 +47,6 @@ public class Vertex {
         panel.setName("Vertex " + id);
         panel.setBounds(x, y, size, size);
         panel.setBackground(null);
-
         return panel;
     }
 
@@ -57,5 +58,13 @@ public class Vertex {
         label.setVerticalAlignment(SwingConstants.CENTER);
 
         return label;
+    }
+
+    public int getX() {
+        return x;
+    }
+
+    public int getY() {
+        return y;
     }
 }
