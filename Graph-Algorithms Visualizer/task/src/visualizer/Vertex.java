@@ -2,13 +2,9 @@ package visualizer;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 
 public class Vertex {
     private final char id;
-    private final JPanel panel;
-    private final JLabel label;
     private final int x;
     private final int y;
     private final int size;
@@ -18,12 +14,6 @@ public class Vertex {
         this.x = x;
         this.y = y;
         this.size = size;
-
-        panel = createPanel();
-        label = createLabel();
-
-        panel.add(label, BorderLayout.CENTER);
-        panel.repaint();
     }
 
     public char getId() {
@@ -31,6 +21,8 @@ public class Vertex {
     }
 
     protected JPanel getPanel() {
+        JPanel panel = createPanel();
+        panel.add(createLabel(), BorderLayout.CENTER);
         return panel;
     }
 
@@ -40,13 +32,13 @@ public class Vertex {
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
                 g.setColor(Color.WHITE);
-                g.fillOval(0, 0, size, size);
+                g.fillOval(x, y, size, size);
             }
         };
-
-        panel.setName("Vertex " + id);
         panel.setBounds(x, y, size, size);
-        panel.setBackground(null);
+        panel.setBackground(Color.cyan);
+        panel.setName("Vertex " + id);
+        System.out.println(panel.getName());
         return panel;
     }
 
@@ -66,5 +58,15 @@ public class Vertex {
 
     public int getY() {
         return y;
+    }
+
+    @Override
+    public String toString() {
+        return "Vertex{" +
+                "id=" + id +
+                ", x=" + x +
+                ", y=" + y +
+                ", size=" + size +
+                '}';
     }
 }

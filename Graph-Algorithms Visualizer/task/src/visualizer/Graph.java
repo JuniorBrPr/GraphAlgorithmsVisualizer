@@ -2,61 +2,86 @@ package visualizer;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.HashMap;
 import java.util.Map;
 
+import static javax.swing.JOptionPane.showInputDialog;
+
 public class Graph {
-    private final JPanel panel;
     private final Map<Character, Vertex> vertices;
+    private final Map<String, Edge> edges;
+    private final int VERTEX_SIZE = 50;
+    private final JPanel panel = createPanel();
 
     public Graph() {
         vertices = new HashMap<>();
-        panel = new JPanel(null);
+        edges = new HashMap<>();
+
+    }
+
+    public void addVertex(MouseEvent e) {
+        System.out.println("Adding vertex");
+
+        String vertexId = showInputDialog(getPanel(), "Enter the vertexID (should be 1 char): ",
+                "Vertex", JOptionPane.PLAIN_MESSAGE);
+        if (vertexId == null) {
+            return;
+        } else if (vertexId.isBlank() || vertexId.length() != 1 || vertices.containsKey(vertexId.charAt(0))) {
+            addVertex(e);
+        } else {
+            Vertex v = new Vertex(vertexId.charAt(0), e.getX(), e.getY(), VERTEX_SIZE);
+            vertices.put(v.getId(), v);
+            System.out.println(v);
+        }
+    }
+
+    public void addEdge(Vertex v1, Vertex v2) {
+        String weight = showInputDialog(getPanel(), "Enter the weight of the edge: ",
+                "Edge", JOptionPane.PLAIN_MESSAGE);
+
+        if (weight == null) {
+            return;
+        } else {
+            if (weight.isBlank() || !weight.matches("[0-9]+") || Integer.parseInt(weight) < 0) {
+                System.out.println("Is not a number, or is negative");
+                addEdge(v1, v2);
+            } else {
+                System.out.println("Adding edge: " + v1.getId() + " -> " + v2.getId() + " with weight: " + weight);
+                String edgeId = new String(new char[]{v1.getId(), v2.getId()});
+                if (edges.containsKey(edgeId)) {
+                    return;
+                }
+                Edge e = new Edge(v1, v2, Integer.parseInt(weight));
+                edges.put(edgeId, e);
+            }
+        }
+    }
+
+
+    protected JPanel createPanel() {
+        JPanel panel = new JPanel(null);
         panel.setBackground(Color.BLACK);
         panel.setName("Graph");
-
-        panel.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                super.mouseClicked(e);
-                new VertexAdder(Graph.this,e.getX(), e.getY());
-            }
-        });
+        return panel;
     }
-
-    public void addVertex(int x, int y, int size, char id) {
-        Vertex v = new Vertex(id, x, y, size);
-        vertices.put(id, v);
-        panel.add(v.getPanel());
-        panel.repaint();
-    }
-
-    public void addEdge(Vertex v1, Vertex v2, int weight){
-        JComponent edge = new JPanel() {
-            @Override
-            protected void paintComponent(Graphics g) {
-                super.paintComponent(g);
-                g.setColor(Color.WHITE);
-                g.drawLine(v1.getX() + 25, v1.getY() + 25, v2.getX() + 25, v2.getY() + 25);
-                g.drawString(String.valueOf(weight), (v1.getX() + v2.getX()) / 2, (v1.getY() + v2.getY()) / 2);
-            }
-        };
-//        edge.setBackground(Color.cyan);
-        edge.setBounds(0, 0, 1000, 1000);
-        edge.setBackground(null);
-        panel.add(edge);
-        panel.repaint();
-    }
-
-//    public void addEdge(Vertex v1, Vertex v2, int weight){
-//        Edge edge = new Edge(v1, v2, weight);
-//        panel.add(edge);
-//        panel.repaint();
-//    }
 
     protected JPanel getPanel() {
+        JPanel panel = createPanel();
+        vertices.forEach((k, v) -> panel.add(v.getPanel()));
+        edges.forEach((k, v) -> panel.add(v.getPanel()));
+
+//        panel.addMouseListener(new MouseAdapter() {
+//            @Override
+//            public void mouseClicked(MouseEvent e) {
+//                super.mouseClicked(e);
+//                System.out.println("mouse");
+//                addVertex();
+//            }
+//        });
+
+        System.out.println("Added vertices and edges");
+
         return panel;
     }
 
