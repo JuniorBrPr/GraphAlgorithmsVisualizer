@@ -8,10 +8,10 @@ import java.awt.event.MouseEvent;
 public class MainFrame extends JFrame {
     private static final int PREFERRED_WIDTH = 800;
     private static final int PREFERRED_HEIGHT = 600;
-    private Graph graph;
-    private JLabel modeLabel;
+    private final Graph graph;
+    private final JLabel modeLabel;
 
-    public MainFrame() {
+    protected MainFrame() {
         setLayout(new BorderLayout());
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setTitle("Graph-Algorithms Visualizer");
@@ -28,6 +28,7 @@ public class MainFrame extends JFrame {
         modeLabel.setOpaque(false);
 
         graph = new Graph();
+        handleAddVertex();
 
         add(modeLabel, BorderLayout.NORTH);
         add(graph.getPanel(), BorderLayout.CENTER);
@@ -45,39 +46,13 @@ public class MainFrame extends JFrame {
         addVertex.addActionListener(e -> {
             modeLabel.setText("Add a Vertex");
             graph.getPanel().removeMouseListener(graph.getPanel().getMouseListeners()[0]);
-            graph.getPanel().addMouseListener(new MouseAdapter() {
-                @Override
-                public void mouseClicked(MouseEvent e) {
-                    super.mouseClicked(e);
-                    new VertexAdder(graph, e.getX(), e.getY());
-                }
-            });
+            handleAddVertex();
         });
 
         addEdge.addActionListener(e -> {
             modeLabel.setText("Add an Edge");
             graph.getPanel().removeMouseListener(graph.getPanel().getMouseListeners()[0]);
-
-            Vertex[] vertices = new Vertex[2];
-            graph.getPanel().addMouseListener(new MouseAdapter() {
-                @Override
-                public void mouseClicked(MouseEvent e) {
-                    super.mouseClicked(e);
-                    graph.getVertices().forEach((k, v) -> {
-                        if (v.getPanel().getBounds().contains(e.getPoint())) {
-                            System.out.println("Vertex " + k + " was clicked");
-                            if (vertices[0] == null) {
-                                vertices[0] = v;
-                            } else if (vertices[1] == null && vertices[0] != v) {
-                                vertices[1] = v;
-                                new EdgeAdder(graph, vertices[0], vertices[1]);
-                                vertices[0] = null;
-                                vertices[1] = null;
-                            }
-                        }
-                    });
-                }
-            });
+            handleAddEdge();
         });
 
         none.addActionListener(e -> {
@@ -92,5 +67,52 @@ public class MainFrame extends JFrame {
         JMenuBar menuBar = new JMenuBar();
         menuBar.add(menu);
         return menuBar;
+    }
+
+    private void handleAddEdge(){
+        Vertex[] vertices = new Vertex[2];
+        graph.getPanel().addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                super.mouseClicked(e);
+                graph.getVertices().forEach((k, v) -> {
+                    if (v.getComponent().getBounds().contains(e.getPoint())) {
+                        System.out.println("Vertex " + k + " was clicked");
+                        if (vertices[0] == null) {
+                            vertices[0] = v;
+                        } else if (vertices[1] == null && vertices[0] != v) {
+                            vertices[1] = v;
+                            String weight = JOptionPane.showInputDialog("Enter the weight of the edge");
+                            if (weight == null) {
+                                vertices[0] = null;
+                                vertices[1] = null;
+                                return;
+                            }
+                            if (weight.isEmpty()) {
+                                weight = "1";
+                            }
+                            if (weight.matches("[0-9]+")) {
+                                graph.addEdge(vertices[0], vertices[1], Integer.parseInt(weight));
+                            } else {
+                                JOptionPane.showMessageDialog(null, "Invalid weight");
+                            }
+                            vertices[0] = null;
+                            vertices[1] = null;
+                        }
+                    }
+                });
+            }
+        });
+    }
+
+    private void handleAddVertex(){
+        graph.getPanel().addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                super.mouseClicked(e);
+                System.out.println("Mouse clicked at " + e.getX() + ", " + e.getY());
+                graph.addVertex(e.getX(), e.getY());
+            }
+        });
     }
 }
